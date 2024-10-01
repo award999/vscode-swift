@@ -166,6 +166,8 @@ export class DiagnosticsManager implements vscode.Disposable {
                 mergedDiagnostics.push(...sourceKitDiagnostics);
                 mergedDiagnostics.push(...swiftcDiagnostics);
                 break;
+            case "disabled":
+                break;
         }
         this.diagnosticCollection.set(uri, mergedDiagnostics);
     }

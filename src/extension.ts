@@ -37,6 +37,8 @@ import { showReloadExtensionNotification } from "./ui/ReloadExtension";
 import { checkAndWarnAboutWindowsSymlinks } from "./ui/win32";
 import { SwiftEnvironmentVariablesManager, SwiftTerminalProfileProvider } from "./terminal";
 import { resolveFolderDependencies } from "./commands/dependencies/resolve";
+import * as yaml from "yaml";
+import { readFile } from "fs/promises";
 
 /**
  * External API as exposed by the extension. Can be queried by other extensions
@@ -51,6 +53,87 @@ export interface Api {
  */
 export async function activate(context: vscode.ExtensionContext): Promise<Api | undefined> {
     try {
+        // yaml.parseDocument.push();
+        const data = yaml.parseAllDocuments(
+            (await readFile("/Users/award999/repos/sourcekit-lsp/opt.yaml")).toString(),
+            {
+                customTags: [
+                    { tag: "!Passed", resolve: (str: string) => `Passed:${str}` },
+                    { tag: "!Missed", resolve: (str: string) => `Missed:${str}` },
+                ],
+            }
+        );
+        const diagnotics = vscode.languages.createDiagnosticCollection("optimization");
+        interface DebugLoc {
+            File: string;
+            Line: number;
+            Column: number;
+        }
+        const diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
+        for (const document of data) {
+            // if (!remark.contents) {
+            //     continue;
+            // }
+            const passed = document.contents?.tag === "!Passed";
+            const location: DebugLoc = (document.get("DebugLoc") as yaml.Document)?.toJSON();
+            if (!location) {
+                continue;
+            }
+            const file = location.File;
+            const line = location.Line;
+            const column = location.Column;
+            const args = (document.get("Args") as yaml.Document)?.toJSON();
+            if (!args) {
+                continue;
+            }
+            let message = "";
+            const related: vscode.DiagnosticRelatedInformation[] = [];
+            for (const arg of args) {
+                const location: DebugLoc = arg.DebugLoc;
+                const argCopy = { ...arg };
+                delete argCopy.DebugLoc;
+                let relatedMessage = "";
+                for (const key in argCopy) {
+                    relatedMessage += `${key} ${argCopy[key]}. `;
+                    message += argCopy[key];
+                }
+                if (arg.DebugLoc) {
+                    related.push(
+                        new vscode.DiagnosticRelatedInformation(
+                            new vscode.Location(
+                                vscode.Uri.file(location.File),
+                                new vscode.Position(location.Line - 1, location.Column - 1)
+                            ),
+                            relatedMessage
+                        )
+                    );
+                }
+            }
+            const diagnostic = new vscode.Diagnostic(
+                new vscode.Range(line - 1, column - 1, line - 1, column - 1),
+                message,
+                passed ? vscode.DiagnosticSeverity.Information : vscode.DiagnosticSeverity.Warning
+            );
+            const pass = document.get("Pass") as string;
+            const name = document.get("Name") as string;
+            diagnostic.code = name;
+            diagnostic.source = pass;
+            diagnostic.relatedInformation = related;
+            const fileDiagnotics = diagnosticsMap.get(file) || [];
+            if (
+                !fileDiagnotics.find(
+                    d => d.message === diagnostic.message && d.range.isEqual(diagnostic.range)
+                )
+            ) {
+                if (passed && configuration.showPassedRemarks) {
+                    fileDiagnotics.push(diagnostic);
+                } else if (!passed && configuration.showMissedRemarks) {
+                    fileDiagnotics.push(diagnostic);
+                }
+            }
+            diagnosticsMap.set(file, fileDiagnotics);
+        }
+        diagnosticsMap.forEach((d, f) => diagnotics.set(vscode.Uri.file(f), d));
         console.debug("Activating Swift for Visual Studio Code...");
         const outputChannel = new SwiftOutputChannel("Swift");
 

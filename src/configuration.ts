@@ -27,7 +27,8 @@ export type DiagnosticCollectionOptions =
     | "onlySourceKit"
     | "keepSwiftc"
     | "keepSourceKit"
-    | "keepAll";
+    | "keepAll"
+    | "disabled";
 
 /** sourcekit-lsp configuration */
 export interface LSPConfiguration {
@@ -312,6 +313,12 @@ const configuration = {
         return vscode.workspace
             .getConfiguration("swift")
             .get<boolean>("enableTerminalEnvironment", true);
+    },
+    get showPassedRemarks(): boolean {
+        return vscode.workspace.getConfiguration("swift").get<boolean>("showPassedRemarks", false);
+    },
+    get showMissedRemarks(): boolean {
+        return vscode.workspace.getConfiguration("swift").get<boolean>("showMissedRemarks", true);
     },
 };
 

@@ -299,7 +299,8 @@
               "onlySourceKit",
               "keepSwiftc",
               "keepSourceKit",
-              "keepAll"
+              "keepAll",
+              "disabled"
             ],
             "enumDescriptions": [
               "Only provide diagnostics from `swiftc`.",
@@ -594,6 +595,18 @@
             "default": "",
             "markdownDescription": "The path of the SDK to compile against (`--sdk` parameter). This is of use when supporting non-standard SDK layouts on Windows and using custom SDKs. The default SDK is determined by the environment on macOS and Windows.",
             "order": 3
+          },
+          "swift.showPassedRemarks": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Show passed LLVM performance remarks.",
+            "order": 4
+          },
+          "swift.showMissedRemarks": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Show missed LLVM performance remarks.",
+            "order": 5
           },
           "swift.diagnostics": {
             "type": "boolean",
@@ -1310,7 +1323,8 @@
     "prettier": "3.3.2",
     "strip-ansi": "^6.0.1",
     "ts-mockito": "^2.6.1",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "yaml": "^2.5.1"
   },
   "dependencies": {
     "lcov-parse": "^1.0.0",
