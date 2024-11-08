@@ -68,7 +68,7 @@ suite("LSPTestDiscovery Suite", () => {
     let client: TestLanguageClient;
     let discoverer: LSPTestDiscovery;
     let pkg: SwiftPackage;
-    const file = vscode.Uri.file("file:///some/file.swift");
+    const file = vscode.Uri.file("/some/file.swift");
 
     beforeEach(async () => {
         pkg = await SwiftPackage.create(file, await SwiftToolchain.create());
