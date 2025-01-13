@@ -70,6 +70,7 @@ suite("Test Explorer Suite", function () {
             await waitForTestExplorerReady(testExplorer);
         },
         requiresLSP: true,
+        requiresDebugger: true,
     });
 
     suite("Debugging", function () {
