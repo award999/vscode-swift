@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 /* eslint-disable no-console */
 
+import * as core from "@actions/core";
 import decompress from "decompress";
 import { createWriteStream } from "node:fs";
 import { rename, unlink } from "node:fs/promises";
@@ -22,18 +23,20 @@ import { Octokit } from "octokit";
 const artifact_id = process.env["VSCODE_SWIFT_VSIX_ID"];
 if (!artifact_id) {
     console.error("No VSCODE_SWIFT_VSIX_ID provided");
-    process.exit(1);
-}
-const token = process.env["GITHUB_TOKEN"];
-if (!token) {
-    console.error("No GITHUB_TOKEN provided");
-    process.exit(1);
+    process.exit(0);
 }
 const repository = process.env["GITHUB_REPOSITORY"] || "swiftlang/vscode-swift";
+const owner = repository.split("/")[0];
+const repo = repository.split("/")[1];
 
 (async function () {
-    const owner = repository.split("/")[0];
-    const repo = repository.split("/")[1];
+    // const token = process.env["GITHUB_TOKEN"];
+    const token = await core.getIDToken();
+    console.log("token=" + token);
+    if (!token) {
+        console.error("No GITHUB_TOKEN provided");
+        process.exit(1);
+    }
 
     const octokit = new Octokit({
         auth: token,
@@ -56,6 +59,7 @@ const repository = process.env["GITHUB_REPOSITORY"] || "swiftlang/vscode-swift";
     );
     await pipeline(data, createWriteStream("artifacts.zip", data));
     const files = await decompress("artifacts.zip", process.cwd());
+    console.log("Downloaded artifact(s): " + files.map(f => f.path).join(", "));
     await rename(files[0].path, "vscode-swift.vsix");
     await unlink("artifacts.zip");
 })();

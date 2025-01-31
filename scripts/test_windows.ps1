@@ -18,7 +18,7 @@ npm ci -ignore-script node-pty
 npm run lint
 npm run format
 npm run package
-$Process = Start-Process npm "run integration-test" -Wait -PassThru -NoNewWindow
+$Process = Start-Process npm "test" -Wait -PassThru -NoNewWindow
 if ($Process.ExitCode -eq 0) {
     Write-Host 'SUCCESS'
 } else {
