@@ -688,6 +688,13 @@
             "markdownDescription": "Disable SourceKit-LSP. This will turn off features like code completion, error diagnostics and jump-to-definition. Features like swift-testing test discovery will not work correctly.",
             "order": 6
           },
+          "swift.sourcekit-lsp.exclude": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "markdownDescription": "Configure glob patterns for excluding workspace folders from getting added to the SourceKit-LSP instance. This will take precedence over the glob patterns provided to `files.exclude`."
+          },
           "sourcekit-lsp.inlayHints.enabled": {
             "type": "boolean",
             "default": true,
@@ -1696,6 +1703,7 @@
     "@types/lcov-parse": "^1.0.2",
     "@types/lodash.debounce": "^4.0.9",
     "@types/lodash.throttle": "^4.1.9",
+    "@types/micromatch": "^4.0.9",
     "@types/mocha": "^10.0.10",
     "@types/mock-fs": "^4.13.4",
     "@types/node": "^20.19.1",
@@ -1722,6 +1730,7 @@
     "fantasticon": "^3.0.0",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
+    "micromatch": "^4.0.8",
     "mocha": "^11.7.0",
     "mock-fs": "^5.5.0",
     "node-pty": "^1.0.0",

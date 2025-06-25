@@ -54,6 +54,8 @@ export interface LSPConfiguration {
     readonly supportedLanguages: string[];
     /** Is SourceKit-LSP disabled */
     readonly disable: boolean;
+    /** Workspace folder glob patterns to exclude */
+    readonly exclude: Record<string, boolean>;
 }
 
 /** debugger configuration */
@@ -148,6 +150,11 @@ const configuration = {
                 return vscode.workspace
                     .getConfiguration("swift.sourcekit-lsp")
                     .get<boolean>("disable", false);
+            },
+            get exclude(): Record<string, boolean> {
+                return vscode.workspace
+                    .getConfiguration("swift.sourcekit-lsp")
+                    .get<Record<string, boolean>>("exclude", {});
             },
         };
     },
