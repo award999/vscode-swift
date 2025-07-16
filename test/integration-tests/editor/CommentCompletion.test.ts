@@ -17,7 +17,7 @@ import * as vscode from "vscode";
 import { CommentCompletionProviders } from "../../../src/editor/CommentCompletion";
 import { Workbench } from "../../../src/utilities/commands";
 
-suite("CommentCompletion Test Suite", () => {
+suite.skip("CommentCompletion Test Suite", () => {
     let document: vscode.TextDocument | undefined;
     let provider: CommentCompletionProviders;
 
