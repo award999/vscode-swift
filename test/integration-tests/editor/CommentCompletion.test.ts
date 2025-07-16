@@ -17,7 +17,7 @@ import * as vscode from "vscode";
 import { CommentCompletionProviders } from "../../../src/editor/CommentCompletion";
 import { Workbench } from "../../../src/utilities/commands";
 
-suite.skip("CommentCompletion Test Suite", () => {
+suite("CommentCompletion Test Suite", () => {
     let document: vscode.TextDocument | undefined;
     let provider: CommentCompletionProviders;
 
@@ -30,9 +30,21 @@ suite.skip("CommentCompletion Test Suite", () => {
             editor => editor.document === document
         );
 
+        const closePromise = new Promise<void>(res => {
+            if (!vscode.window.activeTextEditor) {
+                res();
+            }
+            vscode.window.onDidChangeVisibleTextEditors(e => {
+                if (e.length === 0) {
+                    res();
+                }
+            });
+        });
+
         if (editor && document) {
-            await vscode.window.showTextDocument(document, editor.viewColumn);
+            // await vscode.window.showTextDocument(document, editor.viewColumn);
             await vscode.commands.executeCommand(Workbench.ACTION_CLOSEALLEDITORS);
+            await closePromise;
         }
 
         provider.dispose();
