@@ -143,7 +143,7 @@ class QueuedOperation {
         return this.operation.options.showStatusItem;
     }
     get log(): string | undefined {
-        return this.operation.options.log;
+        return `${this.operation.options.log} (${this.operation.id})`;
     }
 
     public promise?: Promise<number | undefined> = undefined;

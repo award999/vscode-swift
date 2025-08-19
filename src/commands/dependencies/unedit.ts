@@ -46,7 +46,19 @@ async function uneditFolderDependency(
     ctx: WorkspaceContext,
     args: string[] = []
 ) {
+    const languageClientManager = () => folder.workspaceContext.languageClientManager.get(folder);
+    const shouldStop = process.platform === "win32";
     try {
+        if (shouldStop) {
+            await vscode.window.withProgress(
+                {
+                    title: "Stopping the SourceKit-LSP server",
+                    location: vscode.ProgressLocation.Window,
+                },
+                async () => await languageClientManager().stop(false)
+            );
+        }
+
         const uneditOperation = new SwiftExecOperation(
             folder.toolchain.buildFlags.withAdditionalFlags([
                 "package",
@@ -82,8 +94,10 @@ async function uneditFolderDependency(
         const execError = error as { stderr: string };
         // if error contains "has uncommited changes" then ask if user wants to force the unedit
         if (execError.stderr.match(/has uncommited changes/)) {
+            const message = `${identifier} has uncommitted changes`;
+            ctx.logger.debug(message);
             const result = await vscode.window.showWarningMessage(
-                `${identifier} has uncommitted changes. Are you sure you want to continue?`,
+                `${message}. Are you sure you want to continue?`,
                 "Yes",
                 "No"
             );
@@ -92,11 +106,17 @@ async function uneditFolderDependency(
                 ctx.logger.error(execError.stderr, folder.name);
                 return false;
             }
-            await uneditFolderDependency(folder, identifier, ctx, ["--force"]);
+            ctx.logger.debug(`Forcing unedit of ${identifier}`, folder.name);
+            return await uneditFolderDependency(folder, identifier, ctx, ["--force"]);
         } else {
+            ctx.logger.error(`Failed to unedit ${identifier}`, folder.name);
             ctx.logger.error(execError.stderr, folder.name);
             void vscode.window.showErrorMessage(`${execError.stderr}`);
         }
         return false;
+    } finally {
+        if (shouldStop) {
+            await languageClientManager().restart();
+        }
     }
 }

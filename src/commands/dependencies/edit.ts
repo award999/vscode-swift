@@ -33,6 +33,18 @@ export async function editDependency(
     if (!currentFolder) {
         return;
     }
+    const languageClientManager = () =>
+        currentFolder.workspaceContext.languageClientManager.get(currentFolder);
+    const shouldStop = process.platform === "win32";
+    if (shouldStop) {
+        await vscode.window.withProgress(
+            {
+                title: "Stopping the SourceKit-LSP server",
+                location: vscode.ProgressLocation.Window,
+            },
+            async () => await languageClientManager().stop(false)
+        );
+    }
 
     const task = createSwiftTask(
         ["package", "edit", identifier],
@@ -51,6 +63,10 @@ export async function editDependency(
         currentFolder,
         true
     );
+
+    if (shouldStop) {
+        await languageClientManager().restart();
+    }
 
     if (success) {
         await ctx.fireEvent(currentFolder, FolderOperation.resolvedUpdated);

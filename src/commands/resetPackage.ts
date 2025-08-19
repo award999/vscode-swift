@@ -64,6 +64,9 @@ export async function folderResetPackage(folderContext: FolderContext) {
     return await executeTaskWithUI(task, "Reset Package", folderContext).then(
         async success => {
             if (!success) {
+                if (shouldStop) {
+                    await languageClientManager().restart();
+                }
                 return false;
             }
             const resolveTask = createSwiftTask(
@@ -88,7 +91,10 @@ export async function folderResetPackage(folderContext: FolderContext) {
             }
             return result;
         },
-        reason => {
+        async reason => {
+            if (shouldStop) {
+                await languageClientManager().restart();
+            }
             return reason;
         }
     );
