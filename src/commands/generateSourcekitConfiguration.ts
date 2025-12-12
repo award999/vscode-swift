@@ -32,7 +32,7 @@ export async function generateSourcekitConfiguration(ctx: WorkspaceContext): Pro
     if (ctx.folders.length === 1) {
         const folder = ctx.folders[0];
         const success = await createSourcekitConfiguration(ctx, folder);
-        void vscode.window.showTextDocument(vscode.Uri.file(sourcekitConfigFilePath(folder)));
+        await vscode.window.showTextDocument(vscode.Uri.file(sourcekitConfigFilePath(folder)));
         return success;
     }
 
@@ -226,11 +226,7 @@ async function checkDocumentSchema(doc: vscode.TextDocument, workspaceContext: W
         "Don't Ask Again"
     );
     if (result === "Yes") {
-        config.$schema = newUrl;
-        await vscode.workspace.fs.writeFile(
-            doc.uri,
-            Buffer.from(JSON.stringify(config, undefined, 2))
-        );
+        await vscode.commands.executeCommand("json.setSchema", doc.uri.toString(), newUrl);
         return;
     } else if (result === "Don't Ask Again") {
         configuration.checkLspConfigurationSchema = false;
